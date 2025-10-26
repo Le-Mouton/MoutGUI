@@ -1359,4 +1359,5 @@ CMakeFiles/project.dir/src/main.cpp.o: \
   /Users/mathys/Documents/_Mout/gui/src/text.hpp \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree \
-  /Users/mathys/Documents/_Mout/gui/src/button.hpp
+  /Users/mathys/Documents/_Mout/gui/src/button.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/slider.hpp

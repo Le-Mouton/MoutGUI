@@ -12,14 +12,19 @@
 
 class Text : public Item {
 
-	std::string text;
 	float displayScale; 
 
 	std::map<std::string, int> dictTTF;
 
+
+
 public:
 
+	std::string text;
+
 	float xpos, ypos;
+	float max_x;
+	int precision = 24;
 
 	Text (GLFWwindow* _window, float _x, float _y, float _displayScale, const char* vertexPath,const char* fragmentPath, std::string _text) :
 	Item(_window, vertexPath, fragmentPath), displayScale(_displayScale), text(_text) {
@@ -29,6 +34,7 @@ public:
 		xpos = x;
 		ypos = y;
 
+		dictTTF["!"] = 1;
 		dictTTF["#"] = 6;
 		dictTTF["$"] = 7;
 		dictTTF["%"] = 8;
@@ -126,7 +132,7 @@ public:
 		x = xpos;
 		y = ypos;
 
-	    float letterSpacing = 0.015f;
+	    float letterSpacing = displayScale * 0.1f;
 	    float scale = 2.0f / w;
 	    
 	    float currentX = x;
@@ -143,7 +149,7 @@ public:
 	        int indice = it->second;
 	        GlyphData g = loadTTFGlyph("fonts/arial.ttf", indice);
 	        
-	        auto glyphVerts = buildFilledGlyph(g, scale * displayScale, currentX, y, 24);
+	        auto glyphVerts = buildFilledGlyph(g, scale * displayScale, currentX, y, precision);
 	        vertices.insert(vertices.end(), glyphVerts.begin(), glyphVerts.end());
 	        
 	        if (!g.points.empty()) {
@@ -156,6 +162,7 @@ public:
 	            }
 	            float glyphWidth = (maxX - minX) * scale * displayScale;
 	            currentX += glyphWidth + letterSpacing;
+	            max_x = currentX;
 	        }
 	    }
 	}

@@ -14,6 +14,7 @@
 #include "ttf-reader.hpp"
 #include "text.hpp"
 #include "button.hpp"
+#include "slider.hpp"
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -38,6 +39,8 @@ float fov   =  45.0f;
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+double color;
 
 bool poly = false;
 
@@ -87,8 +90,10 @@ int main() {
     Menu monMenu(window, "right", "center", 100.0f, 1000.0f, "dark", 4.0f, "shader/shader.vs", "shader/shader.fs"); item_list.push_back(&monMenu);
     Menu monMenu2(window, "right", "top", 100.0f, 1000.0f, "dark", 4.0f, "shader/shader.vs", "shader/shader.fs"); item_list.push_back(&monMenu2);
 
-    Text monText(window, -0.8f, 0.8f, 0.1f, "shader/shader.vs", "shader/shader.fs", "Je s'appelle grout!"); item_list.push_back(&monText);
-    Button monBoutton(window, "Clique ici", 0.0f, 0.0f, 0.01f, "dark", 4.0f, "shader/shader.vs", "shader/shader.fs"); item_list.push_back(&monBoutton);
+    Slider monSlider(window, 0.5f, 0.5f, 300.0f, 80.0f, 2.1f, 10.0f, "shader/shader.vs", "shader/shader.fs", color); item_list.push_back(&monSlider);
+
+    Text monText(window, -0.8f, 0.8f, 0.1f, "shader/shader.vs", "shader/shader.fs", "Je s'appelle groot!"); item_list.push_back(&monText);
+    Button monBoutton(window, "Clique ici", 0.0f, 0.0f, 0.1f, "dark", 4.0f, "shader/shader.vs", "shader/shader.fs", poly); item_list.push_back(&monBoutton);
 
 
 
@@ -96,12 +101,16 @@ int main() {
     
     monMenu.loadVertices();
     monMenu2.loadVertices();
+    monSlider.loadVertices();
     monText.loadVertices();
     monBoutton.loadVertices();
+    
+
     monMenu.renderSetUp();
     monMenu2.renderSetUp();
     monText.renderSetUp();
     monBoutton.renderSetUp();
+    monSlider.renderSetUp();
 
 
     glPointSize(8);
@@ -117,7 +126,7 @@ int main() {
         int w, h;
         glfwGetFramebufferSize(window, &w, &h);
         glViewport(0, 0, w, h);
-        glClearColor(0.1f, 0.12f, 0.18f, 1.0f);
+        glClearColor(0.1f, 0.12f, color, 1.0f);
         glClearStencil(0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -130,6 +139,7 @@ int main() {
         monMenu2.renderItem(poly);
         monText.renderItem(poly);
         monBoutton.renderItem(poly);
+        monSlider.renderItem(poly);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

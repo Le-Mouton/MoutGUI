@@ -155,25 +155,6 @@ class Menu : public Item {
 				v.y = y + height/2;
 				vertices.push_back(v);
 			} else {
-				// v.x = x + width/2;
-				// v.y = y + height/2;
-				// vertices.push_back(v);
-				// v.x = x + width/2 + (cornerRadius) * 2.0f / w;
-				// v.y = y + height/2;
-				// vertices.push_back(v);
-				// v.x = x + width/2 + (cornerRadius) * 2.0f / w;
-				// v.y = y + height/2 + (cornerRadius) * 2.0f / h;
-				// vertices.push_back(v);
-				// v.x = x + width/2 + (cornerRadius) * 2.0f / w;
-				// v.y = y + height/2 + (cornerRadius) * 2.0f / h;
-				// vertices.push_back(v);
-				// v.x = x + width/2;
-				// v.y = y + height/2 + (cornerRadius) * 2.0f / h;
-				// vertices.push_back(v);
-				// v.x = x + width/2;
-				// v.y = y + height/2;
-				// vertices.push_back(v);
-
 
 				v.x = x - width/2+ (cornerRadius) * 2.0f / w;
 				v.y = y - height/2 - (cornerRadius) * 2.0f / h;
@@ -195,7 +176,6 @@ class Menu : public Item {
 				vertices.push_back(v);
 			}
 
-			v.r = 0.9f; v.g = 0.9f; v.b = 0.9f;
 			if(color == "dark")
 				v.r = 0.3f; v.g = 0.3f; v.b = 0.3f;
 
@@ -217,7 +197,6 @@ class Menu : public Item {
 			v.x = x + width/2;
 			v.y = y + height/2;
 			vertices.push_back(v);
-			// std::cout<< v.x <<" "<< v.y <<std::endl;
 		}
 
 		void renderSetUp() override {

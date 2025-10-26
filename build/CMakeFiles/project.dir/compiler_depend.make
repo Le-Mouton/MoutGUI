@@ -1457,6 +1457,7 @@ CMakeFiles/project.dir/src/main.cpp.o: /Users/mathys/Documents/_Mout/gui/src/mai
   /Users/mathys/Documents/_Mout/gui/src/menu.hpp \
   /Users/mathys/Documents/_Mout/gui/src/repere.hpp \
   /Users/mathys/Documents/_Mout/gui/src/shader.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/slider.hpp \
   /Users/mathys/Documents/_Mout/gui/src/text.hpp \
   /Users/mathys/Documents/_Mout/gui/src/ttf-reader.hpp \
   /opt/homebrew/include/GLFW/glfw3.h
@@ -1465,6 +1466,8 @@ CMakeFiles/project.dir/src/main.cpp.o: /Users/mathys/Documents/_Mout/gui/src/mai
 /Users/mathys/Documents/_Mout/gui/src/ttf-reader.hpp:
 
 /Users/mathys/Documents/_Mout/gui/src/text.hpp:
+
+/Users/mathys/Documents/_Mout/gui/src/slider.hpp:
 
 /Users/mathys/Documents/_Mout/gui/include/glm/packing.hpp:
 

@@ -18,13 +18,17 @@ class Button : public Item{
 protected:
 	std::string text;
 	float width, height;
+
 	float cornerRadius;
 	float cornerResolution = 10;
+
 	std::string color;
 	Text text_button;
+
 	float scale;
 	bool isDragging = false;
 	bool isDoubleClicked = false;
+	bool isClicked = false;
 
 	double dragOffsetX = 0.0;
 	double dragOffsetY = 0.0;
@@ -37,21 +41,28 @@ protected:
 	double animationTime = 0.0f;
 	bool endAnimation = false;
 
-	float prop_width, prop_height;
+	float prop_width = 40.0f; 
+	float prop_height = 100.0f;
+	float text_width;
 
 	float delta_width, delta_height;
 	float newdelta_width, newdelta_height;
 
-public:
-	Button(GLFWwindow* _window, std::string _text, float _x, float _y, float _scale, const std::string &_color, float _cornerRadius, const char* vertexPath, const char* fragmentPath) : 
-	Item(_window, vertexPath, fragmentPath), scale(_scale), color(_color), cornerRadius(_cornerRadius), text(_text), text_button(_window, _x, _y, _scale, vertexPath, fragmentPath, _text) {
-		x = _x; y = _y;
-			
-		prop_width = 300.0f;
-		prop_height = 100.0f;
+	bool &switched_value;
 
-		width  = prop_width  * 2.0f / w;
+public:
+	Button(GLFWwindow* _window, std::string _text, float _x, float _y, float _scale, const std::string &_color, float _cornerRadius, const char* vertexPath, const char* fragmentPath, bool &_switched_value) : 
+	Item(_window, vertexPath, fragmentPath), scale(_scale), color(_color), cornerRadius(_cornerRadius), text(_text), text_button(_window, _x, (_y + 100.0f * 1 / h), _scale * 0.5f, vertexPath, fragmentPath, _text), switched_value(_switched_value){
+		x = _x; y = _y;
+
+		text_button.loadVertices();
+
+		text_width = - x + text_button.max_x + scale * 0.4f;
+
+		width  = prop_width  * 2.0f / w + text_width;
 		height = prop_height * 2.0f / h;
+
+		
 	}
 
 		void loadVertices() override {
@@ -60,8 +71,13 @@ public:
 
 			Vertex v;
 
-			if(color == "dark")
-				v.r = 0.20f; v.g = 0.2f; v.b = 0.2f; v.alpha = 1.0f;
+			if(color == "dark"){
+				v.r = 0.2f; v.g = 0.2f; v.b = 0.2f; v.alpha = 1.0f;
+			}
+
+			if(color == "black_dark"){
+				v.r = 0.7f; v.g = 0.1f; v.b = 0.1f; v.alpha = 0.5f;
+			}
 
 			if(cornerResolution != 0){
 				// top-right corner
@@ -139,9 +155,13 @@ public:
 				vertices.push_back(v);
 			}
 
-			v.r = 0.9f; v.g = 0.9f; v.b = 0.9f;
-			if(color == "dark")
-				v.r = 0.3f; v.g = 0.3f; v.b = 0.3f;
+			if(color == "dark"){
+				v.r = 0.3f; v.g = 0.3f; v.b = 0.3f; v.alpha = 1.0f;
+			}
+
+			if(color == "black_dark"){
+				v.r = 0.2f; v.g = 0.2f; v.b = 0.2f; v.alpha = 1.0f;
+			}
 
 			v.x = x + width/2;
 			v.y = y + height/2;
@@ -204,8 +224,8 @@ public:
 	        glBindVertexArray(VAO);
 	        glDrawArrays(GL_TRIANGLE_STRIP, 0, vertices.size());
 
-	       	text_button.xpos = x - width/2.2f;
-			text_button.ypos = y;
+	       	text_button.xpos = x - width/2.0f + scale * 0.2f;
+			text_button.ypos = y - scale * 0.4f;
 
 			text_button.loadVertices();
 			text_button.renderSetUp();
@@ -232,13 +252,21 @@ public:
 				        lastMouseX = xpos;
 				        lastMouseY = ypos;
 
+				        isClicked = true;
+
 				        if(isDoubleClicked){
 
-
+				        }
+				        if(isClicked){
+				        	isClicked = !isClicked;
+				        	color = "black_dark";
+				        	loadVertices();
+				        	switched_value = !switched_value;
+				        	return;
 				        }
 
-		    		} else isDoubleClicked = false;
-		    	} else isDoubleClicked = false;
+		    		} else isDoubleClicked = false; isClicked= false; color = "dark"; loadVertices();
+		    	} else isDoubleClicked = false; isClicked=false; color = "dark"; loadVertices();
 		    }
 		    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 		    {

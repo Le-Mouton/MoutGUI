@@ -51,8 +51,6 @@ class Repere : public Item {
 
 			x = xpos; y = ypos;
 
-			glfwGetFramebufferSize(window, &w, &h);
-
 			vertices.clear();
 
 			Vertex v;
