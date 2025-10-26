@@ -10,7 +10,7 @@ add_executable(project
 )
 
 target_include_directories(project PRIVATE ${CMAKE_SOURCE_DIR}/include)
-
+ 
 target_link_libraries(project PRIVATE
   glfw
   "-framework OpenGL"
@@ -26,7 +26,7 @@ if(APPLE)
     if(LIBOMP)
         message(STATUS "Found libomp: ${LIBOMP}")
         target_compile_options(project PUBLIC -Xpreprocessor -fopenmp)
-        target_link_libraries(project PUBLIC ${LIBOMP})
+        target_link_libraries(project PUBLIC ${LIBOMP})$
         target_include_directories(project PUBLIC ${LIBOMP_DIR}/include)
     else()
         message(FATAL_ERROR "libomp not found. Install with: brew install libomp")

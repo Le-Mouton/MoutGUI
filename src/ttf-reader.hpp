@@ -68,11 +68,11 @@ inline GlyphData loadTTFGlyph(const std::string& path, int glyphIndex = 1) {
     if (!glyfOffset || !locaOffset || !headOffset || !maxpOffset)
         throw std::runtime_error("Missing required tables in TTF");
 
-    // ---- head → indexToLocFormat ----
+    // ---- head = indexToLocFormat ----
     f.seekg(headOffset + 50, std::ios::beg);
     int16_t indexToLocFormat = readS16(f);
 
-    // ---- maxp → numGlyphs ----
+    // ---- maxp = numGlyphs ----
     f.seekg(maxpOffset + 4, std::ios::beg);
     uint16_t numGlyphs = readU16(f);
     if (glyphIndex < 0 || glyphIndex >= numGlyphs) glyphIndex = 0;
@@ -199,8 +199,7 @@ inline void appendCurve(std::vector<glm::vec2>& poly,
 }
 
 inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& raw,
-                                                float scale, int steps)
-{
+                                                float scale, int steps) {
     if (raw.empty()) return {};
 
     std::vector<GlyphPoint> pts = raw;
@@ -250,7 +249,7 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
         const GlyphPoint& b = expanded[(i + 1) % expanded.size()];
 
         if (a.onCurve && b.onCurve) {
-            // Segment droit : on-curve → on-curve
+            // Segment droit : on-curve = on-curve
             poly.push_back(P(a));
             i++;
         } 
@@ -398,8 +397,9 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
 
 inline std::vector<Vertex> buildFilledGlyph(const GlyphData& gd,
                                             float scale = 1.0f / 2048.0f,
-                                            int steps = 32)
-{
+                                            float offsetX = 0.0f,
+                                            float offsetY = 0.0f,
+                                            int steps = 32) {
     std::vector<Vertex> filled;
     if (gd.points.empty() || gd.endPtsOfContours.empty()) return filled;
 
@@ -414,19 +414,19 @@ inline std::vector<Vertex> buildFilledGlyph(const GlyphData& gd,
         if (poly.size() < 3) continue;
         
         float area = signedArea(poly);
-        
-        // Dans les fichiers TTF :
-        // - Contours extérieurs sont en sens horaire (aire négative)
-        // - Trous sont en sens anti-horaire (aire positive)
-        // On veut : extérieurs CCW, trous CW
-        // Donc on inverse tout simplement !
+
         if (area < 0.0f) {
-            // Contour extérieur → on inverse pour avoir CCW
             std::reverse(poly.begin(), poly.end());
         }
-        // Les trous restent en CW (aire positive → pas d'inversion)
 
         auto tris = triangulateCCW(poly);
+        
+        // 🔧 Appliquer l'offset APRÈS la triangulation
+        for (auto& v : tris) {
+            v.x += offsetX;
+            v.y += offsetY;
+        }
+        
         filled.insert(filled.end(), tris.begin(), tris.end());
     }
 
