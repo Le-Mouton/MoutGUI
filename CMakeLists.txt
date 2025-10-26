@@ -7,7 +7,6 @@ find_package(glfw3 3.3 REQUIRED)
 add_executable(project
   src/main.cpp
   src/glad.c
-  src/menu.cpp
 )
 
 target_include_directories(project PRIVATE ${CMAKE_SOURCE_DIR}/include)
