@@ -33,7 +33,7 @@ If you notice design issues, performance inefficiencies, or better architectural
 ---
 
 ## Directory Structure
-
+```
 src/
 │── main.cpp            → Example application
 │── item.hpp            → Base class for UI components
@@ -48,6 +48,7 @@ src/
 │── heatmap.hpp         → Heatmap and spectrogram plotting
 │── shader.hpp          → GLSL shader management
 └── ttf-reader.hpp      → Lightweight TrueType font loader
+```
 
 ---
 
