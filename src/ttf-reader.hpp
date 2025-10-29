@@ -91,7 +91,6 @@ inline GlyphData loadTTFGlyph(const std::string& path, int glyphIndex = 1) {
     f.seekg(offset, std::ios::beg);
     int16_t numberOfContours = readS16(f);
 
-    // Bounding box (ignored for now)
     (void)readS16(f); (void)readS16(f);
     (void)readS16(f); (void)readS16(f);
 
@@ -186,7 +185,6 @@ inline bool pointInTri(const glm::vec2& p,const glm::vec2& a,const glm::vec2& b,
     return s>=0 && t>=0 && u>=0;
 }
 
-// Quadratic curve interpolation
 inline void appendCurve(std::vector<glm::vec2>& poly,
                         const glm::vec2& p0, const glm::vec2& c, const glm::vec2& p1,
                         int steps){
@@ -204,7 +202,6 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
 
     std::vector<GlyphPoint> pts = raw;
 
-    // --- fermer proprement début/fin ---
     if (!pts.front().onCurve) {
         const auto& last = pts.back();
         pts.insert(pts.begin(), {
@@ -222,8 +219,6 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
             true
         });
     }
-
-    // --- insérer les on-curve implicites entre off-curve consécutifs ---
     std::vector<GlyphPoint> expanded;
     for (size_t i = 0; i < pts.size(); ++i) {
         expanded.push_back(pts[i]);
@@ -249,12 +244,10 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
         const GlyphPoint& b = expanded[(i + 1) % expanded.size()];
 
         if (a.onCurve && b.onCurve) {
-            // Segment droit : on-curve = on-curve
             poly.push_back(P(a));
             i++;
         } 
         else if (a.onCurve && !b.onCurve) {
-            // Courbe quadratique : on-curve → off-curve → on-curve
             const GlyphPoint& c = expanded[(i + 2) % expanded.size()];
 
             if (!c.onCurve) {
@@ -265,10 +258,8 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
             
             glm::vec2 p0 = P(a), pc = P(b), p1 = P(c);
             
-            // Ajouter le point de départ
             poly.push_back(p0);
             
-            // Interpoler la courbe (sans inclure p1, il sera ajouté au prochain tour)
             for (int s = 1; s < steps; ++s) {
                 float t = float(s) / steps;
                 float omt = 1.0f - t;
@@ -291,7 +282,6 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
     return poly;
 }
 
-// Triangulation par ear-clipping
 inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
     std::vector<Vertex> out;
     if (poly.size() < 3) return out;
@@ -310,13 +300,11 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
         out.push_back(v);
     };
 
-    // Fonction améliorée pour tester la convexité avec tolérance
     auto isConvex = [](const glm::vec2& a, const glm::vec2& b, const glm::vec2& c) -> bool {
         float cross = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-        return cross > -1e-6f; // Tolérance pour les cas presque colinéaires
+        return cross > -1e-6f;
     };
 
-    // Fonction améliorée pour tester si un point est dans un triangle
     auto pointInTriangle = [](const glm::vec2& p, const glm::vec2& a, 
                               const glm::vec2& b, const glm::vec2& c) -> bool {
         auto sign = [](const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& p3) {
@@ -334,7 +322,7 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
     };
 
     int guard = 0;
-    int maxIterations = P.size() * P.size(); // Plus généreux
+    int maxIterations = P.size() * P.size();
 
     while (idx.size() > 2 && guard++ < maxIterations) {
         bool cut = false;
@@ -349,10 +337,8 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
             const glm::vec2& b = P[ib];
             const glm::vec2& c = P[ic];
 
-            // Vérifier que ce n'est pas dégénéré
             float area = std::abs((b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x));
             if (area < 1e-8f) {
-                // Triangle dégénéré, on le saute
                 idx.erase(idx.begin() + k);
                 cut = true;
                 break;
@@ -360,7 +346,6 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
 
             if (!isConvex(a, b, c)) continue;
 
-            // Vérifier si d'autres points sont à l'intérieur
             bool hasPointInside = false;
             for (int j : idx) {
                 if (j == ia || j == ib || j == ic) continue;
@@ -372,7 +357,6 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
 
             if (hasPointInside) continue;
 
-            // Ear trouvée !
             pushV(a); pushV(b); pushV(c);
             idx.erase(idx.begin() + k);
             cut = true;
@@ -421,7 +405,6 @@ inline std::vector<Vertex> buildFilledGlyph(const GlyphData& gd,
 
         auto tris = triangulateCCW(poly);
         
-        // 🔧 Appliquer l'offset APRÈS la triangulation
         for (auto& v : tris) {
             v.x += offsetX;
             v.y += offsetY;

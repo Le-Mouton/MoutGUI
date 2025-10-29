@@ -21,8 +21,6 @@ class Text : public Item {
 public:
 
 	std::string text;
-
-	float xpos, ypos;
 	float max_x;
 	int precision = 24;
 
@@ -200,7 +198,7 @@ public:
 
 	}
 
-	void mouse_button_callback(GLFWwindow* /*window*/, int /*button*/, int /*action*/, int /*mods*/) {}
-	void cursor_position_callback(GLFWwindow* /*window*/, double /*xpos*/, double /*ypos*/) {}
+	bool mouse_button_callback(GLFWwindow* /*window*/, int /*button*/, int /*action*/, int /*mods*/) { return false;}
+	bool cursor_position_callback(GLFWwindow* /*window*/, double /*xpos*/, double /*ypos*/) { return false;}
 
 };

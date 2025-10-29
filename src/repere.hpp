@@ -33,7 +33,6 @@ class Repere : public Item {
 		double scale;
 		double alpha = 0.0f;
 
-		float xpos, ypos;
 		bool isClickOut = false;
 
 		float lenght_x = 0.15f; 
@@ -184,7 +183,7 @@ class Repere : public Item {
 	        glDrawArrays(GL_TRIANGLES, 0, vertices.size());
 		}
 
-		void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override {
+		bool mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override {
 		    double xpos, ypos;
 		    glfwGetCursorPos(window, &xpos, &ypos);
 
@@ -198,7 +197,7 @@ class Repere : public Item {
 				        isDragging = true;
 				        lastMouseX = xpos;
 				        isVertical = false;
-				        return;
+				        return true;
 
 		    		}
 		    	}
@@ -209,22 +208,25 @@ class Repere : public Item {
 				        isDragging = true;
 				        lastMouseY = ypos;
 				        isVertical = true;
-				        return;
+				        return true;
 
 		    		}
 		    	}
 		    	isClickOut = true;
 		    	scale = 1.0f;
 		    	alpha = 0.0f;
+		    	return false;
 		    }
 		    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 		    {
 		        isDragging = false;
+		        return false;
 		    }
+		    return false;
 		}
 
-		void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
-		    if (!isDragging) return;
+		bool cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
+		    if (!isDragging) return false;
 		    if(isVertical){
 			    double dy = ypos - lastMouseY;
 
@@ -237,6 +239,7 @@ class Repere : public Item {
 			    y += ndc_dy;
 
 			    loadVertices();
+			    return true;
 		    } else {
 		    	double dx = xpos - lastMouseX;
 
@@ -249,6 +252,18 @@ class Repere : public Item {
 			    x += ndc_dx;
 
 			    loadVertices();
+			    return true;
 		    }
+		    return false;
+		}
+
+	    bool contains(double xpos, double ypos) override {
+  	      	float ndc_x = (xpos / w) * 4.0f - 1.0f;
+	        float ndc_y = 1.0f - (ypos / h) * 4.0f;
+	        
+	        // Zone élargie pour faciliter la sélection
+	        return 	(((((xpos / w) * 4.0f - 1.0f) <= (x + (lenght_x + thickness)*scale)) && ((xpos / w) * 4.0f - 1.0f) >= (x - (lenght_x + thickness)*scale) &&
+		   			(1.0f - (ypos / h) * 4.0f) <= (y + thickness*scale) && (1.0f - (ypos / h) * 4.0f) >= (y - thickness*scale)) || ((((xpos / w) * 4.0f - 1.0f) <= (x + thickness*scale)) && ((xpos / w) * 4.0f - 1.0f) >= (x - thickness*scale) &&
+		    		(1.0f - (ypos / h) * 4.0f) <= (y + (lenght_y + thickness)*scale) && (1.0f - (ypos / h) * 4.0f) >= (y - (lenght_y + thickness)*scale)));
 		}
 };

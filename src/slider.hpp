@@ -45,8 +45,6 @@ class Slider : public Item {
 	public:
 
 		double scale;
-
-		float xpos, ypos;
 		bool isClickOut = false;
 
 		Slider(GLFWwindow* _window, float _x, float _y, float _width, float _height, float _scale, float _cornerRadius, const char* vertexPath, const char* fragmentPath, double &_value_change) 
@@ -55,15 +53,17 @@ class Slider : public Item {
 			width = width *2.0f/w;
 			height = height * 2.0f/h;
 
+			global_width = width * scale; global_height = height * scale;
+
 			x = _x; y = _y;
-			x_percent = (- width * 1/4 + thickness) * scale;
+			x_percent = (- width * 1/4) * scale;
 
 			text = "0.0";
 
 			value_text.text = text;
 			value_text.precision = 4;
+			value_text.xpos	= (x + (width + thickness) * scale); value_text.ypos = (y-0.01f * scale);
 			value_text.loadVertices();
-
 			value_text.renderSetUp();
 
 		}
@@ -71,16 +71,21 @@ class Slider : public Item {
 
 		void loadVertices() override {
 
+			x = xpos; y = ypos;
+			value_text.xpos	= (x + width * 1/4 * scale); value_text.ypos = (y-0.01f * scale);
+			value_text.loadVertices();
+			value_text.renderSetUp();
+
 			vertices.clear();
 
 			Vertex v;
 
 			v.r = 0.2f; v.g = 0.2f; v.b = 0.2f; v.alpha = 1.0f;
 
-			v.x = x + width*3/4 * scale;
+			v.x = x + width/2 * scale;
 			v.y = y + height/2 * scale;
 			vertices.push_back(v);
-			v.x = x + width*3/4 * scale;
+			v.x = x + width /2 * scale;
 			v.y = y - height/2 * scale;
 			vertices.push_back(v);
 			v.x = x - width/2 * scale;
@@ -92,28 +97,28 @@ class Slider : public Item {
 			v.x = x - width/2 * scale;
 			v.y = y + height/2 * scale;
 			vertices.push_back(v);
-			v.x = x + width*3/4 * scale;
+			v.x = x + width/2 * scale;
 			v.y = y + height/2 * scale;
 			vertices.push_back(v);
 
 			v.r = 0.3f; v.g = 0.3f; v.b = 0.3f; v.alpha = 1.0f;
 
-			v.x = x - thickness * scale - width * 1/4 * scale - thickness/2 * scale;
+			v.x = x - width * 1/3 * scale;
 			v.y = y - thickness * scale - thickness/2  * scale;
 			vertices.push_back(v);
-			v.x = x + thickness * scale + width * 1/4 * scale + thickness/2 * scale;
+			v.x = x + width * scale * 1/6;
 			v.y = y - thickness * scale - thickness/2 * scale;
 			vertices.push_back(v);
-			v.x = x + thickness * scale + width * 1/4 * scale + thickness/2 * scale;
+			v.x = x + width * scale * 1/6;
 			v.y = y + thickness * scale + thickness/2 * scale;
 			vertices.push_back(v);
-			v.x = x + thickness * scale + width * 1/4 * scale + thickness/2 * scale;
+			v.x = x + width * scale * 1/6;
 			v.y = y + thickness * scale + thickness/2 * scale;
 			vertices.push_back(v);
-			v.x = x - thickness * scale - width * 1/4 * scale - thickness/2 * scale;
+			v.x = x - width * 1/3 * scale;
 			v.y = y + thickness * scale + thickness/2 * scale;
 			vertices.push_back(v);
-			v.x = x - thickness * scale - width * 1/4 * scale - thickness/2 * scale;
+			v.x = x - width * 1/3 * scale;
 			v.y = y - thickness * scale - thickness/2 * scale;
 			vertices.push_back(v);
 
@@ -138,7 +143,6 @@ class Slider : public Item {
 			v.x = x - thickness * scale + x_percent;
 			v.y = y - thickness * scale;
 			vertices.push_back(v);
-			
 
 		}
 
@@ -185,54 +189,64 @@ class Slider : public Item {
 	        value_text.renderItem(true);
 		}
 
-		void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override {
-		    double xpos, ypos;
-		    glfwGetCursorPos(window, &xpos, &ypos);
+	   bool mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override {
+	        double xpos, ypos;
+	        glfwGetCursorPos(window, &xpos, &ypos);
+	        
+	        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+	            float ndc_x = (xpos / w) * 4.0f - 1.0f;
+	            float ndc_y = 1.0f - (ypos / h) * 4.0f;
+	            
+	            if (ndc_x <= (x + x_percent + thickness*scale) && 
+	                ndc_x >= (x + x_percent - thickness*scale) &&
+	                ndc_y <= (y + thickness*scale) && 
+	                ndc_y >= (y - thickness*scale)) {
+	                
+	                isDragging = true;
+	                lastMouseX = xpos;
+	                return true;
+	            }
+	        }
+	        else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+	            if (isDragging) {
+	                isDragging = false;
+	                return true;
+	            }
+	        }
+	        
+	        return false;
+	    }
 
-		    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-		    {
-
-		    	// horizontal 
-		    	if((((xpos / w) * 4.0f - 1.0f) <= (x + x_percent + thickness*scale)) && ((xpos / w) * 4.0f - 1.0f) >= (x + x_percent - thickness*scale)){
-		    		if((1.0f - (ypos / h) * 4.0f) <= (y + thickness*scale) && (1.0f - (ypos / h) * 4.0f) >= (y - thickness*scale)){
-				        isDragging = true;
-				        lastMouseX = xpos;
-				        return;
-
-		    		}
-		    	}
-
-		    	isClickOut = true;
-		    }
-		    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
-		    {
-		        isDragging = false;
-		    }
-		}
-
-		void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
-		    if (!isDragging) return;
-
-		    	double dx = xpos - lastMouseX;
-
-			    lastMouseX = xpos;
-
-			    float ndc_dx =  4.0f * dx / w;
-
-			    x_percent += ndc_dx;
-
-			    x_percent = std::max((- width * 1/4 + thickness)* scale, std::min(x_percent, (width * 1/4 - thickness)* scale));
-
-			    float a = (- width * 1/4 + thickness)* scale;
-			    float b = (width * 1/4 - thickness)* scale;
-
-			    value_change = x_percent / (b - a)  - a / (b - a);
-
-			    text = std::to_string(value_change);
-			    value_text.text = text.substr(0, 4);
-			    value_text.loadVertices();
-			    value_text.renderSetUp();
-
-			    loadVertices();
-		}
+	    bool cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
+	        if (!isDragging) return false;
+	        
+	        double dx = xpos - lastMouseX;
+	        lastMouseX = xpos;
+	        
+	        float ndc_dx = 4.0f * dx / w;
+	        x_percent += ndc_dx;
+	        x_percent = std::max((- width * 1/4)* scale, std::min(x_percent, (width/6 - thickness)* scale));
+	        
+	        float a = (- width * 1/4)* scale;
+	        float b = (width/6 - thickness)* scale;
+	        value_change = x_percent / (b - a) - a / (b - a);
+	        
+	        text = std::to_string(value_change);
+	        value_text.text = text.substr(0, 4);
+	        value_text.xpos = (x + (width + thickness) * scale);
+	        value_text.ypos = (y - 0.01f * scale);
+	        
+	        value_text.loadVertices();
+	        value_text.renderSetUp();
+	        loadVertices();
+	        
+	        return true;
+	    }
+	    bool contains(double xpos, double ypos) override {
+	        float ndc_x = (xpos / w) * 4.0f - 1.0f;
+	        float ndc_y = 1.0f - (ypos / h) * 4.0f;
+	        
+	        return (ndc_x >= x - width/2 * scale && ndc_x <= x + width/2 * scale &&
+	                ndc_y >= y - height/2 * scale && ndc_y <= y + height/2 * scale);
+	    }
 };

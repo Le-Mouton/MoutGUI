@@ -42,7 +42,7 @@ protected:
 	bool endAnimation = false;
 
 	float prop_width = 40.0f; 
-	float prop_height = 100.0f;
+	float prop_height = 60.0f;
 	float text_width;
 
 	float delta_width, delta_height;
@@ -51,6 +51,7 @@ protected:
 	bool &switched_value;
 
 public:
+
 	Button(GLFWwindow* _window, std::string _text, float _x, float _y, float _scale, const std::string &_color, float _cornerRadius, const char* vertexPath, const char* fragmentPath, bool &_switched_value) : 
 	Item(_window, vertexPath, fragmentPath), scale(_scale), color(_color), cornerRadius(_cornerRadius), text(_text), text_button(_window, _x, (_y + 100.0f * 1 / h), _scale * 0.5f, vertexPath, fragmentPath, _text), switched_value(_switched_value){
 		x = _x; y = _y;
@@ -59,13 +60,17 @@ public:
 
 		text_width = - x + text_button.max_x + scale * 0.4f;
 
-		width  = prop_width  * 2.0f / w + text_width;
+		width  = (prop_width  * 2.0f / w) * scale + text_width;
 		height = prop_height * 2.0f / h;
+
+		global_width = width ; global_height = height;
 
 		
 	}
 
 		void loadVertices() override {
+
+			x = xpos; y = ypos;
 
 			vertices.clear();
 
@@ -233,7 +238,7 @@ public:
 				
 		}
 
-		void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override {
+		bool mouse_button_callback(GLFWwindow* window, int button, int action, int mods) override {
 		    double xpos, ypos;
 		    glfwGetCursorPos(window, &xpos, &ypos);
 
@@ -251,32 +256,27 @@ public:
 				        isDragging = true;
 				        lastMouseX = xpos;
 				        lastMouseY = ypos;
-
 				        isClicked = true;
-
-				        if(isDoubleClicked){
-
-				        }
 				        if(isClicked){
 				        	isClicked = !isClicked;
 				        	color = "black_dark";
 				        	loadVertices();
 				        	switched_value = !switched_value;
-				        	return;
+				        	return true; 
 				        }
 
-		    		} else isDoubleClicked = false; isClicked= false; color = "dark"; loadVertices();
-		    	} else isDoubleClicked = false; isClicked=false; color = "dark"; loadVertices();
+		    		} else isDoubleClicked = false; isClicked= false; color = "dark"; loadVertices(); return false;
+		    	} else isDoubleClicked = false; isClicked=false; color = "dark"; loadVertices(); return false;
 		    }
 		    else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
 		    {
-		        isDragging = false;
+		        isDragging = false; return false;
 		    }
+		    return false;
 		}
 
-		void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
-
-		    if (!isDragging) return;
+		bool cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
+		    if (!isDragging) return false;
 		    double dx = xpos - lastMouseX;
 		    double dy = ypos - lastMouseY;
 
@@ -293,6 +293,15 @@ public:
 		    y = std::max(-1.0f + height/2 + cornerRadius * 2.0f / h, std::min(1.0f - height/2 - cornerRadius * 2.0f / h, y));
 
 		    loadVertices();
+		    return true;
 		}
+		bool contains(double xpos, double ypos) override {
+	        float ndc_x = (xpos / w) * 4.0f - 1.0f;
+	        float ndc_y = 1.0f - (ypos / h) * 4.0f;
+	        
+	        // Zone élargie pour faciliter la sélection
+	        return (ndc_x >= x - width/2 * scale && ndc_x <= x + width/2 * scale &&
+	                ndc_y >= y - height/2 * scale && ndc_y <= y + height/2 * scale);
+    	}
 
 };
