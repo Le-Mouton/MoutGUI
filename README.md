@@ -46,6 +46,7 @@ src/
 │── lineplot.hpp        → Dynamic line plotting
 │── scatter.hpp         → Scatter + regression plotting
 │── heatmap.hpp         → Heatmap and spectrogram plotting
+│── repere.hpp          → Dynamix resizer for 2D items
 │── shader.hpp          → GLSL shader management
 └── ttf-reader.hpp      → Lightweight TrueType font loader
 ```
