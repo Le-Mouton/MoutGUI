@@ -282,7 +282,7 @@ inline std::vector<glm::vec2> tessellateContour(const std::vector<GlyphPoint>& r
     return poly;
 }
 
-inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
+inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly, glm::vec4 color){
     std::vector<Vertex> out;
     if (poly.size() < 3) return out;
 
@@ -296,7 +296,7 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
     auto pushV = [&](const glm::vec2& q){
         Vertex v; 
         v.x = q.x; v.y = q.y; v.z = 0;
-        v.r = 0.9f; v.g = 0.9f; v.b = 0.9f; v.alpha = 1.0f;
+        v.r = color.x; v.g = color.y; v.b = color.z; v.alpha = color.w;
         out.push_back(v);
     };
 
@@ -380,6 +380,7 @@ inline std::vector<Vertex> triangulateCCW(const std::vector<glm::vec2>& poly){
 }
 
 inline std::vector<Vertex> buildFilledGlyph(const GlyphData& gd,
+                                                glm::vec4 color,
                                             float scale = 1.0f / 2048.0f,
                                             float offsetX = 0.0f,
                                             float offsetY = 0.0f,
@@ -403,7 +404,7 @@ inline std::vector<Vertex> buildFilledGlyph(const GlyphData& gd,
             std::reverse(poly.begin(), poly.end());
         }
 
-        auto tris = triangulateCCW(poly);
+        auto tris = triangulateCCW(poly, color);
         
         for (auto& v : tris) {
             v.x += offsetX;

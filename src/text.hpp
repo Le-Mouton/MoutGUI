@@ -20,6 +20,8 @@ class Text : public Item {
 
 public:
 
+	glm::vec4 color;
+
 	std::string text;
 	float max_x;
 	int precision = 24;
@@ -28,6 +30,8 @@ public:
 	Item(_window, vertexPath, fragmentPath), displayScale(_displayScale), text(_text) {
 		x = _x;
 		y = _y;
+
+		color = glm::vec4(0.9f, 0.9f, 0.9f, 1.0f);
 
 		xpos = x;
 		ypos = y;
@@ -147,7 +151,7 @@ public:
 	        int indice = it->second;
 	        GlyphData g = loadTTFGlyph("fonts/arial.ttf", indice);
 	        
-	        auto glyphVerts = buildFilledGlyph(g, scale * displayScale, currentX, y, precision);
+	        auto glyphVerts = buildFilledGlyph(g, color, scale * displayScale, currentX, y, precision);
 	        vertices.insert(vertices.end(), glyphVerts.begin(), glyphVerts.end());
 	        
 	        if (!g.points.empty()) {

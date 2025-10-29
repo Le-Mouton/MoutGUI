@@ -52,7 +52,7 @@ public:
       prop_width(_width), prop_height(_height), cornerRadius(_cornerRadius), comp(_comp) {
         
         cornerResolution = 10;
-        priority = 10;
+        priority = 20;
         
         // Créer les curseurs
         resizeCursor = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR);
@@ -336,7 +336,6 @@ public:
     }
 
     bool cursor_position_callback(GLFWwindow* window, double xpos, double ypos) override {
-        // Changer le curseur si on survole la zone de resize
         if (!isResizing && !isDragging && isInResizeHandle(xpos, ypos)) {
             if (!cursorChanged) {
                 glfwSetCursor(window, resizeCursor);

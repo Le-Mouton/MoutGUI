@@ -15,7 +15,10 @@
 #include "text.hpp"
 #include "button.hpp"
 #include "slider.hpp"
-
+#include "scatter.hpp"
+#include "plot.hpp"
+#include "lineplot.hpp"
+#include "heatmap.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -40,11 +43,12 @@ float fov   =  45.0f;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-double color0;
-double color1;
-double color2;
+double frequency = 2.0;
+double amplitude = 3.0;
+double phase = 0.0;
 
 bool poly = false;
+bool paused = false;
 
 std::vector<Item*> item_list;
 
@@ -85,57 +89,119 @@ int main() {
         return 1;
     }
 
-   // glEnable(GL_DEPTH_TEST);
+    // ========== PLOT 1: Signal temporel (scrolling) ==========
+    LinePlot signalPlot(window, -0.5f, 0.5f, 450.0f, 280.0f,
+                        "shader/shader.vs", "shader/shader.fs");
+    signalPlot.setLineWidth(2.5f);
+    signalPlot.setLineColor(0.2f, 0.6f, 0.9f);
+    signalPlot.title->text = "Signal: sin(freq*t + phase)";
+    signalPlot.xLabel->text = "Time";
+    signalPlot.yLabel->text = "Amplitude";
+    signalPlot.setLimits(0, 10, -5, 5);
+    
+    std::deque<DataPoint> signalHistory;
 
-    // Infos basiques
-    std::cout << "OpenGL version: " << glGetString(GL_VERSION) << "\n";
-    std::cout << "Renderer: " << glGetString(GL_RENDERER) << "\n";
+    signalPlot.addLineSeries(signalHistory);
 
-    Slider monSlider(window, 0.5f, 0.5f, 300.0f, 40.0f, 1.f, 10.0f, 
-                     "shader/shader.vs", "shader/shader.fs", color0);
-    monSlider.priority = 100;  // Haute priorité
+    const int maxHistoryPoints = 200;
+
+    // ========== PLOT 2: Scatter avec fit ==========
+    Scatter scatterFit(window, 0.5f, 0.5f, 450.0f, 280.0f,
+                            "shader/shader.vs", "shader/shader.fs");
+    scatterFit.title->text = "Data + Regression";
+    scatterFit.xLabel->text = "X";
+    scatterFit.yLabel->text = "Y";
+
+    HeatmapPlot heatmapPlot(window, -0.5f, -0.35f, 450, 280, "shader/shader.vs", "shader/shader.fs");
+    heatmapPlot.setGridSize(40, 40);
+    heatmapPlot.setColormap(HeatmapPlot::VIRIDIS);
+    heatmapPlot.title->text = "Heatmap";
+    heatmapPlot.loadVertices();
+    heatmapPlot.renderSetUp();
+
+    // Générer des données avec du bruit
+    std::vector<DataPoint> scatterData;
+    for (float x = 0; x < 10; x += 0.2f) {
+        DataPoint pt;
+        pt.x = x;
+        pt.y = 2.0f * x + 1.0f + ((rand() % 100) / 50.0f - 1.0f) * 2.0f;
+        pt.r = 0.3f; pt.g = 0.7f; pt.b = 0.3f;
+        scatterData.push_back(pt);
+    }
+    scatterFit.setScatterData(scatterData);
+
+    // Ligne de régression
+    std::vector<DataPoint> fitLine;
+    for (float x = 0; x < 10; x += 0.5f) {
+        DataPoint pt;
+        pt.x = x;
+        pt.y = 2.0f * x + 1.0f; // Ligne théorique
+        fitLine.push_back(pt);
+    }
+    scatterFit.addLineSeries(fitLine, 3.0f, glm::vec3(0.9f, 0.3f, 0.2f));
+
+    std::deque<std::vector<float>> spectrogramData;
+    const int W = 100, H = 50;
+
+    HeatmapPlot spectrogram(window, 0.5f, -0.35f, 450, 280, "shader/shader.vs", "shader/shader.fs");
+    spectrogram.setGridSize(H, W);
+    spectrogram.setColormap(HeatmapPlot::HOT);
+    spectrogram.title->text = "Spectrogram";
+    spectrogram.loadVertices();
+    spectrogram.renderSetUp();
+
+    // ========== MENU DE CONTRÔLE ==========
+    Slider freqSlider(window, 0.5f, 0.7f, 250.0f, 30.0f, 1.f, 8.0f,
+                      "shader/shader.vs", "shader/shader.fs", frequency);
+    freqSlider.priority = 100;
     
-    Slider monSlider1(window, 0.5f, 0.3f, 300.0f, 40.0f, 1.f, 10.0f, 
-                      "shader/shader.vs", "shader/shader.fs", color1);
-    monSlider1.priority = 100;
+    Slider ampSlider(window, 0.5f, 0.5f, 250.0f, 30.0f, 1.f, 8.0f,
+                     "shader/shader.vs", "shader/shader.fs", amplitude);
+    ampSlider.priority = 100;
     
-    Slider monSlider2(window, 0.5f, 0.1f, 300.0f, 40.0f, 1.f, 10.0f, 
-                      "shader/shader.vs", "shader/shader.fs", color2);
-    monSlider2.priority = 100;
-    
-    Text monText(window, -0.8f, 0.8f, 0.1f, "shader/shader.vs", 
-                 "shader/shader.fs", "Je s'appelle groot!");
-    monText.priority = 50;  // Priorité moyenne
-    
-    Button monBoutton(window, "Clique ici", 0.0f, 0.0f, 0.05f, "dark", 4.0f, 
-                      "shader/shader.vs", "shader/shader.fs", poly);
-    monBoutton.priority = 100;
-    
-    // Créer le menu APRÈS les composants
-    std::vector<Item*> menu_content = {&monSlider, &monSlider1, &monSlider2, &monBoutton};
-    
-    Menu monMenu(window, "right", "top", 200.0f, 1000.0f, "dark", 4.0f, 
-                 "shader/shader.vs", "shader/shader.fs", menu_content);
-    monMenu.priority = 10;  // Priorité basse
-    
-    // Liste pour les callbacks : composants AVANT le menu
+    Slider phaseSlider(window, 0.5f, 0.3f, 250.0f, 30.0f, 1.f, 8.0f,
+                       "shader/shader.vs", "shader/shader.fs", phase);
+    phaseSlider.priority = 100;
+
+    Button pauseBtn(window, "Pause", 0.0f, 0.0f, 0.04f, "dark", 4.0f,
+                    "shader/shader.vs", "shader/shader.fs", paused);
+    pauseBtn.priority = 100;
+
+    std::vector<Item*> menu_content = {&freqSlider, &ampSlider, &phaseSlider, &pauseBtn};
+    Menu controlMenu(window, "right", "top", 180.0f, 500.0f, "dark", 4.0f,
+                     "shader/shader.vs", "shader/shader.fs", menu_content);
+    controlMenu.priority = 10;
+
+    // Liste complète des items
     std::vector<Item*> item_list = {
-        &monSlider, &monSlider1, &monSlider2, &monBoutton,  // Haute priorité
-        //&monText,                                            // Moyenne
-        &monMenu                                             // Basse priorité
+        &freqSlider, &ampSlider, &phaseSlider, &pauseBtn,
+        &controlMenu,
+        &signalPlot, 
+        &scatterFit , &heatmapPlot, &spectrogram
     };
 
     CallBack callBackManager(window, item_list);
-    
-    monMenu.loadVertices();
-    monText.loadVertices();
-    
 
-    monMenu.renderSetUp();
-    monText.renderSetUp();
-
+    // Setup initial
+    signalPlot.loadVertices();
+    signalPlot.renderSetUp();
+    
+    scatterFit.loadVertices();
+    scatterFit.renderSetUp();
+    
+    heatmapPlot.loadVertices();
+    heatmapPlot.renderSetUp();
+    
+    spectrogram.loadVertices();
+    spectrogram.renderSetUp();
+    
+    controlMenu.loadVertices();
+    controlMenu.renderSetUp();
 
     glPointSize(8);
+
+    float time = 0.0f;
+
 
     // --- Thread Render ---
     while (!glfwWindowShouldClose(window)) {
@@ -148,7 +214,7 @@ int main() {
         int w, h;
         glfwGetFramebufferSize(window, &w, &h);
         glViewport(0, 0, w, h);
-        glClearColor(color2, color1, color0, 1.0f);
+        glClearColor(0.03f, 0.03f, 0.1f, 1.0f);
         glClearStencil(0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
@@ -157,8 +223,54 @@ int main() {
         glm::mat4 projection = glm::perspective(glm::radians(fov), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
-        monMenu.renderItem(poly);
-        monText.renderItem(poly);
+        // Mise à jour du signal temporel
+        if (!paused) {
+            DataPoint newPoint;
+            newPoint.x = time;
+            newPoint.y = amplitude * sin(frequency*50 * time + phase*50);
+            signalHistory.push_back(newPoint);
+            
+            if (signalHistory.size() > maxHistoryPoints) {
+                signalHistory.pop_front();
+            }
+            
+            // après avoir poussé newPoint dans signalHistory…
+            signalPlot.setSeriesData(0, signalHistory);
+
+            // ajuste les limites pour “scroller”
+            if (!signalHistory.empty()) {
+                float xMin = signalHistory.front().x;
+                float xMax = signalHistory.back().x;
+                // garde une marge si tu veux (ex: +5%)
+                signalPlot.setLimits(xMin, xMax, -5.0f, 5.0f);
+            }            
+            signalPlot.loadVertices();
+
+                    std::vector<float> newColumn(H);
+            for(int i=0;i<H;i++)
+                newColumn[i] = exp(-pow(i*0.1 - frequency*50,2));
+
+            spectrogram.pushColumn(newColumn);
+            spectrogram.loadVertices();
+
+            std::vector<std::vector<float>> H(40, std::vector<float>(40));
+            for (int i=0;i<40;i++)
+            for (int j=0;j<40;j++)
+                H[i][j] = sin(sqrt(i*i+j*j)*0.15 - time);
+
+            heatmapPlot.setGridData(H);
+            heatmapPlot.loadVertices();
+            time += deltaTime;
+        }
+
+        
+
+        // Rendu
+        signalPlot.renderItem(poly);
+        scatterFit.renderItem(poly);
+        heatmapPlot.renderItem(poly);
+        spectrogram.renderItem(poly);
+        controlMenu.renderItem(poly);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -187,6 +299,16 @@ void processInput(GLFWwindow *window)
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
         poly = !poly;
+    static bool pPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS && !pPressed) {
+        paused = !paused;
+        pPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_P) == GLFW_RELEASE) {
+        pPressed = false;
+        //std::cout << "not pause" << std::endl;
+
+    }
 
 }
 

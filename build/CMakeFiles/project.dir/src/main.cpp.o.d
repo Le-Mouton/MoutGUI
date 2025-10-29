@@ -1360,4 +1360,8 @@ CMakeFiles/project.dir/src/main.cpp.o: \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/map \
   /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__tree \
   /Users/mathys/Documents/_Mout/gui/src/button.hpp \
-  /Users/mathys/Documents/_Mout/gui/src/slider.hpp
+  /Users/mathys/Documents/_Mout/gui/src/slider.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/scatter.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/plot.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/lineplot.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/heatmap.hpp

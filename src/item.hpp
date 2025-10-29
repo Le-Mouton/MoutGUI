@@ -37,8 +37,8 @@ class Item{
 		float xpos, ypos;
 		float global_width, global_height;
 
-		Item(GLFWwindow* _window, const char* vertexPath, const char* fragmentPath)
-        : window(_window), shader_item(vertexPath, fragmentPath) {
+		Item(GLFWwindow* _window, const char* _vertexPath, const char* _fragmentPath)
+        : window(_window), shader_item(_vertexPath, _fragmentPath)  {
 
 			glfwGetFramebufferSize(window, &w, &h);
 
@@ -56,7 +56,6 @@ class Item{
 	        return false;
 	    }
 
-	    // Vérifie si le point (xpos, ypos) est dans les limites de l'item
 	    virtual bool contains(double xpos, double ypos) {
 	        int w_width, w_height;
 	        glfwGetWindowSize(window, &w_width, &w_height);

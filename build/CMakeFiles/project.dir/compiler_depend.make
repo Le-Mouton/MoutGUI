@@ -1453,9 +1453,13 @@ CMakeFiles/project.dir/src/main.cpp.o: /Users/mathys/Documents/_Mout/gui/src/mai
   /Users/mathys/Documents/_Mout/gui/include/glm/vector_relational.hpp \
   /Users/mathys/Documents/_Mout/gui/src/button.hpp \
   /Users/mathys/Documents/_Mout/gui/src/callback.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/heatmap.hpp \
   /Users/mathys/Documents/_Mout/gui/src/item.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/lineplot.hpp \
   /Users/mathys/Documents/_Mout/gui/src/menu.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/plot.hpp \
   /Users/mathys/Documents/_Mout/gui/src/repere.hpp \
+  /Users/mathys/Documents/_Mout/gui/src/scatter.hpp \
   /Users/mathys/Documents/_Mout/gui/src/shader.hpp \
   /Users/mathys/Documents/_Mout/gui/src/slider.hpp \
   /Users/mathys/Documents/_Mout/gui/src/text.hpp \
@@ -1468,6 +1472,10 @@ CMakeFiles/project.dir/src/main.cpp.o: /Users/mathys/Documents/_Mout/gui/src/mai
 /Users/mathys/Documents/_Mout/gui/src/text.hpp:
 
 /Users/mathys/Documents/_Mout/gui/src/slider.hpp:
+
+/Users/mathys/Documents/_Mout/gui/src/scatter.hpp:
+
+/Users/mathys/Documents/_Mout/gui/src/plot.hpp:
 
 /Users/mathys/Documents/_Mout/gui/include/glm/packing.hpp:
 
@@ -2574,6 +2582,8 @@ CMakeFiles/project.dir/src/main.cpp.o: /Users/mathys/Documents/_Mout/gui/src/mai
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__format/escaped_output_table.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__format/concepts.h:
+
+/Users/mathys/Documents/_Mout/gui/src/heatmap.hpp:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/replace_copy_if.h:
 
@@ -3950,6 +3960,8 @@ CMakeFiles/project.dir/src/main.cpp.o: /Users/mathys/Documents/_Mout/gui/src/mai
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__algorithm/ranges_is_sorted.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__fwd/variant.h:
+
+/Users/mathys/Documents/_Mout/gui/src/lineplot.hpp:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include/c++/v1/__type_traits/is_literal_type.h:
 
